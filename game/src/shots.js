@@ -22,6 +22,7 @@ export function stageShot(game, name, seed = 1) {
   const rand = rng(seed * 7919 + 13);
   game.t = 12.5; // frozen clock: cones, sparkles and lasers hold still
   game.shotMode = true;
+  game.shotName = name; // v4: render may add shot-only polish (glow, spotlight)
 
   if (name === 'cover') {
     // Shot 1 — Ruang Permata mid-heist, staged as a NEAR-MISS (v3):

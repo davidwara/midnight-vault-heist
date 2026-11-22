@@ -2,11 +2,15 @@
 // the thief, the HUD with its big alarm meter, and every screen.
 // Everything is procedural Canvas 2D; the game ships no image files.
 //
-// VISUAL SYSTEM (v3): a night museum that reads at a glance — warm
-// sconce light against cool marble, bright gradient vision cones so a
-// guard's gaze is unmissable, sparkling loot with a gold TARGET pill,
-// a moonlight pool under the thief so the dark hero reads first, and a
-// HUD whose alarm meter, loot, EMP and clock never collide.
+// VISUAL SYSTEM (v3, deepened in v4): a night museum that reads at a
+// glance — warm sconce light against cool marble, bright gradient
+// vision cones so a guard's gaze is unmissable, sparkling loot with a
+// gold TARGET pill, a moonlight pool under the thief so the dark hero
+// reads first, and a HUD whose alarm meter, loot, EMP and clock never
+// collide. v4 adds shot-only cinematic polish (cover spotlight, hero
+// glow, safe-cell light), a vault-door lockpick dial with a KENA!
+// flash and prize chip, and a getaway screen that breaks the final
+// level's loot, time and ghost bonuses down before the big total.
 // The thief, the guards and the cameras all cast soft shadows so the
 // floor stops looking flat; every sparkle, window and confetti dot is
 // placed by a deterministic hash, never Math.random, so screenshots
@@ -288,12 +292,14 @@ function drawLoot(ctx, game, t) {
     if (game.lootTaken[l.id]) continue;
     const pulse = 0.5 + 0.5 * Math.sin(t * 3 + l.x);
     const R = l.main ? 46 : 36;
-    // Sparkling halo so the target reads at a glance.
-    const g = ctx.createRadialGradient(l.x, l.y, 2, l.x, l.y, R + pulse * 12);
-    g.addColorStop(0, l.main ? 'rgba(245,197,66,0.7)' : 'rgba(245,197,66,0.5)');
+    // Sparkling halo so the target reads at a glance. In a staged shot
+    // the main target burns a little brighter and wider (v4).
+    const haloR = R + pulse * 12 + (game.shotMode && l.main ? 10 : 0);
+    const g = ctx.createRadialGradient(l.x, l.y, 2, l.x, l.y, haloR);
+    g.addColorStop(0, l.main ? `rgba(245,197,66,${game.shotMode ? 0.85 : 0.7})` : 'rgba(245,197,66,0.5)');
     g.addColorStop(1, 'rgba(245,197,66,0)');
     ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(l.x, l.y, R + pulse * 12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(l.x, l.y, haloR, 0, Math.PI * 2); ctx.fill();
     // Twinkling four-point sparkles around the loot.
     for (let i = 0; i < 3; i++) {
       const a = hash2(l.x, i) * Math.PI * 2;
@@ -338,11 +344,22 @@ function drawLoot(ctx, game, t) {
 }
 
 function drawLasers(ctx, game, t) {
+  if (game.shotName === 'laser') {
+    // The one safe cell (x 460-640, y 300-420), faintly lit green: the
+    // thief crouches here between a live beam and a dark one. Shot only.
+    ctx.fillStyle = 'rgba(55,214,122,0.07)';
+    ctx.fillRect(460, 300, 180, 120);
+    ctx.strokeStyle = 'rgba(55,214,122,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 6]);
+    ctx.strokeRect(460, 300, 180, 120);
+    ctx.setLineDash([]);
+  }
   for (const b of game.room.lasers || []) {
     const on = laserOn(b, t);
     ctx.strokeStyle = on ? '#ff2d2d' : 'rgba(255,45,45,0.18)';
-    ctx.lineWidth = on ? 3 : 2;
-    if (on) ctx.shadowColor = '#ff2d2d', ctx.shadowBlur = 12;
+    ctx.lineWidth = on ? (game.shotMode ? 4 : 3) : 2;
+    if (on) ctx.shadowColor = '#ff2d2d', ctx.shadowBlur = game.shotMode ? 22 : 12;
     ctx.setLineDash(on ? [] : [6, 8]);
     ctx.beginPath();
     ctx.moveTo(b.x1, b.y1);
@@ -433,6 +450,15 @@ function drawGuards(ctx, game) {
       const col = g.state === 'chase' ? RED : '#ffaa28';
       pill(ctx, g.x - 11, g.y - 44, 22, 22, 'rgba(0,0,0,0.65)', col);
       text(ctx, mark, g.x, g.y - 32, 17, col, 'center');
+      if (game.shotMode) {
+        // v4: a bright halo ring around the '?' so the near-miss reads
+        // at thumbnail size. Shot only; the pill itself never moves.
+        ctx.strokeStyle = col;
+        ctx.globalAlpha = 0.85;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(g.x, g.y - 33, 16, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
     }
     if (g.sus > 0.05 && g.sus < 1) {
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -478,11 +504,14 @@ function drawPlayer(ctx, game, t) {
   // hood on a dark floor, so a faint glow lifts him off the marble and
   // makes him read first at a glance — cyan while sneaking, warm gold
   // while walking. Purely visual; it never affects detection.
-  const glow = ctx.createRadialGradient(p.x, p.y, 4, p.x, p.y, 46);
-  glow.addColorStop(0, p.sneaking ? 'rgba(125,215,255,0.20)' : 'rgba(245,197,66,0.14)');
+  // v4: in a staged shot the hero's pool is bigger and brighter, so the
+  // dark thief never gets lost on the dark floor. Live play unchanged.
+  const glowR = game.shotMode ? 64 : 46;
+  const glow = ctx.createRadialGradient(p.x, p.y, 4, p.x, p.y, glowR);
+  glow.addColorStop(0, p.sneaking ? `rgba(125,215,255,${game.shotMode ? 0.32 : 0.20})` : `rgba(245,197,66,${game.shotMode ? 0.22 : 0.14})`);
   glow.addColorStop(1, 'rgba(125,215,255,0)');
   ctx.fillStyle = glow;
-  ctx.beginPath(); ctx.arc(p.x, p.y, 46, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2); ctx.fill();
   // Sneak shadow ring when hidden in the dark.
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath(); ctx.ellipse(p.x, p.y + 11, 16, 6, 0, 0, Math.PI * 2); ctx.fill();
@@ -731,56 +760,90 @@ function drawFailed(ctx, game) {
 }
 
 function drawWon(ctx, game) {
+  const r = game.levelResult || { stars: 3, lootValue: 0, timeBonus: 0, ghost: false, time: 0, maxAlarm: 0, score: 0 };
   ctx.fillStyle = '#0b0e1a';
   ctx.fillRect(0, 0, VIEW.W, VIEW.H);
-  // Gold glow behind the trophy + deterministic confetti.
-  const glow = ctx.createRadialGradient(640, 180, 10, 640, 180, 340);
-  glow.addColorStop(0, 'rgba(245,197,66,0.20)');
+  // Gold glow behind the trophy + denser deterministic confetti (v4).
+  const glow = ctx.createRadialGradient(640, 180, 10, 640, 180, 420);
+  glow.addColorStop(0, 'rgba(245,197,66,0.22)');
   glow.addColorStop(1, 'rgba(245,197,66,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, VIEW.W, VIEW.H);
   const confettiCols = ['#f5c542', '#37d67a', '#7dd7ff', '#ffffff', '#ff5b8a'];
-  for (let i = 0; i < 110; i++) {
+  for (let i = 0; i < 170; i++) {
     const cx = hash2(i, 7) * VIEW.W;
-    const cy = hash2(i, 13) * 560;
+    const cy = hash2(i, 13) * 700;
     ctx.fillStyle = confettiCols[i % confettiCols.length];
     ctx.globalAlpha = 0.35 + hash2(i, 29) * 0.55;
-    ctx.fillRect(cx, cy, 4 + hash2(i, 41) * 4, 3 + hash2(i, 53) * 4);
+    ctx.fillRect(cx, cy, 4 + hash2(i, 41) * 5, 3 + hash2(i, 53) * 5);
   }
   ctx.globalAlpha = 1;
   goldFrame(ctx, 0.6);
-  text(ctx, '🏆  KABUR SEMPURNA!', VIEW.W / 2, 180, 44, GOLD, 'center');
-  text(ctx, 'Lima ruangan, satu helikopter, nol penyesalan.', VIEW.W / 2, 228, 17, '#c9cede', 'center', '500');
-  text(ctx, '💎   👑   🪙   💰   🖼️', VIEW.W / 2, 262, 26, '#fff', 'center');
-  starsRow(ctx, Math.min(3, Math.round(game.progress.stars / 5)), VIEW.W / 2, 315, 44);
-  const rows = [
-    ['Total jarahan', `$${game.progress.totalScore.toLocaleString('en-US')}`],
-    ['Bintang', `${game.progress.stars} / 15`],
-    ['Peringkat', game.progress.stars >= 13 ? 'LEGENDA BAYANGAN' : game.progress.stars >= 9 ? 'PENCURI ULUNG' : game.progress.stars >= 5 ? 'MALING BERBAKAT' : 'PEMULA BERUNTUNG'],
-  ];
-  let y = 368;
-  for (const [k, v] of rows) {
-    text(ctx, k, VIEW.W / 2 - 180, y, 16, '#9aa0bd', 'left', '500');
-    text(ctx, v, VIEW.W / 2 + 180, y, 16, '#fff', 'right');
-    y += 34;
+  text(ctx, '🏆  KABUR SEMPURNA!', VIEW.W / 2, 168, 44, GOLD, 'center');
+  text(ctx, 'Lima ruangan, satu helikopter, nol penyesalan.', VIEW.W / 2, 214, 17, '#c9cede', 'center', '500');
+  text(ctx, '💎   👑   🪙   💰   🖼️', VIEW.W / 2, 246, 26, '#fff', 'center');
+  starsRow(ctx, Math.min(3, Math.round(game.progress.stars / 5)), VIEW.W / 2, 292, 48);
+  // Ghost badge: the clean getaway, earned by staying under 25% alarm.
+  if (r.ghost) {
+    const badge = '👻  TAK TERLIHAT — BONUS +$500';
+    ctx.font = '700 13px system-ui, sans-serif';
+    const bw = ctx.measureText(badge).width + 28;
+    pill(ctx, VIEW.W / 2 - bw / 2, 322, bw, 24, 'rgba(55,214,122,0.14)', '#37d67a');
+    text(ctx, badge, VIEW.W / 2, 334, 13, '#7dff9e', 'center');
   }
-  button(ctx, game, VIEW.W / 2 - 130, y + 30, 260, 50, '↻  MAIN LAGI', 'restart-all', true);
-  button(ctx, game, VIEW.W / 2 - 130, y + 94, 260, 50, '⌂  MENU UTAMA', 'menu', false);
+  // Level breakdown card — the final room's loot, time and ghost bonus
+  // add up to the level score, so the win lands as hard as the heist.
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  rr(ctx, 440, 354, 400, 124, 10); ctx.fill();
+  ctx.strokeStyle = 'rgba(245,197,66,0.35)';
+  ctx.lineWidth = 1.5; ctx.stroke();
+  const brows = [
+    [`Jarahan level ${game.levelIndex + 1}`, `$${r.lootValue.toLocaleString('en-US')}`],
+    ['Bonus waktu', `+$${r.timeBonus.toLocaleString('en-US')}`],
+    ['Bonus hantu', r.ghost ? '+$500' : '$0'],
+  ];
+  let by = 380;
+  for (const [k, v] of brows) {
+    text(ctx, k, 470, by, 14, '#9aa0bd', 'left', '500');
+    text(ctx, v, 810, by, 14, '#fff', 'right');
+    by += 26;
+  }
+  ctx.strokeStyle = 'rgba(245,197,66,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(470, 452); ctx.lineTo(810, 452); ctx.stroke();
+  text(ctx, 'SKOR LEVEL', 470, 468, 15, GOLD, 'left');
+  text(ctx, `$${r.score.toLocaleString('en-US')}`, 810, 468, 16, GOLD, 'right');
+  // The big total, then stars + rank on one line.
+  text(ctx, 'TOTAL JARAHAN', VIEW.W / 2 - 180, 510, 16, '#9aa0bd', 'left', '500');
+  text(ctx, `$${game.progress.totalScore.toLocaleString('en-US')}`, VIEW.W / 2 + 180, 510, 22, GOLD, 'right');
+  const rank = game.progress.stars >= 13 ? 'LEGENDA BAYANGAN' : game.progress.stars >= 9 ? 'PENCURI ULUNG' : game.progress.stars >= 5 ? 'MALING BERBAKAT' : 'PEMULA BERUNTUNG';
+  text(ctx, `⭐ ${game.progress.stars} / 15   ·   ${rank}`, VIEW.W / 2, 540, 15, '#fff', 'center', '600');
+  button(ctx, game, VIEW.W / 2 - 130, 562, 260, 48, '↻  MAIN LAGI', 'restart-all', true);
+  button(ctx, game, VIEW.W / 2 - 130, 620, 260, 48, '⌂  MENU UTAMA', 'menu', false);
 }
 
 function drawLockpick(ctx, game) {
   const lp = game.lockpick;
-  // Dim the room, then the dial.
-  ctx.fillStyle = 'rgba(5,6,14,0.66)';
+  // Dim the room hard, then the dial — v4: the dial must own the frame.
+  ctx.fillStyle = 'rgba(5,6,14,0.78)';
   ctx.fillRect(0, 0, VIEW.W, VIEW.H);
   const cx = VIEW.W / 2, cy = 330, R = 168;
+  // Vault-door face: radial steel gradient + gold inner ring, so the
+  // dial reads as a safe door, not a flat disc.
+  const face = ctx.createRadialGradient(cx, cy - 30, 20, cx, cy, R + 26);
+  face.addColorStop(0, '#232a4e');
+  face.addColorStop(0.7, '#161b36');
+  face.addColorStop(1, '#10142a');
   ctx.save();
   ctx.shadowColor = '#c9a227';
   ctx.shadowBlur = 26;
-  ctx.fillStyle = '#141830';
+  ctx.fillStyle = face;
   ctx.beginPath(); ctx.arc(cx, cy, R + 26, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
   ctx.strokeStyle = '#565e8a'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.strokeStyle = 'rgba(245,197,66,0.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, R - 24, 0, Math.PI * 2); ctx.stroke();
   // Rivets around the dial ring.
   ctx.fillStyle = '#8a90b0';
   for (let i = 0; i < 8; i++) {
@@ -789,23 +852,26 @@ function drawLockpick(ctx, game) {
     ctx.arc(cx + Math.cos(a) * (R + 14), cy + Math.sin(a) * (R + 14), 4, 0, Math.PI * 2);
     ctx.fill();
   }
-  // Progress pips: 3 hits banked so far, under the dial's captions.
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = i < lp.successes ? GOLD : 'rgba(255,255,255,0.18)';
-    ctx.beginPath(); ctx.arc(cx - 28 + i * 28, cy + R + 88, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#565e8a'; ctx.lineWidth = 1.5; ctx.stroke();
-  }
 
-  // Green zone.
+  // Green zone — v4: brighter wedge with crisp white edges.
   const z0 = Math.PI + (lp.zone - 0.085) * Math.PI;
   const z1 = Math.PI + (lp.zone + 0.085) * Math.PI;
-  ctx.fillStyle = 'rgba(55,214,122,0.6)';
+  ctx.fillStyle = 'rgba(55,214,122,0.75)';
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.arc(cx, cy, R, z0, z1);
   ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(190,255,215,0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(z0) * R, cy + Math.sin(z0) * R);
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(z1) * R, cy + Math.sin(z1) * R);
+  ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, R, z0, z1); ctx.stroke();
 
-  // Tick marks.
+  // Tick marks + end numbers.
   ctx.strokeStyle = '#8a8fae';
   ctx.lineWidth = 2;
   for (let i = 0; i <= 10; i++) {
@@ -815,25 +881,55 @@ function drawLockpick(ctx, game) {
     ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
     ctx.stroke();
   }
-  // Needle.
+  text(ctx, '0', cx - (R - 26), cy, 11, '#8a8fae', 'center', '600');
+  text(ctx, '10', cx + (R - 26), cy, 11, '#8a8fae', 'center', '600');
+
+  // Needle — v4: thicker, harder glow, bright tip dot.
   const na = Math.PI + lp.needle * Math.PI;
+  const needleCol = lp.flash > 0 ? (lp.flashOk ? '#37d67a' : RED) : GOLD;
   ctx.save();
-  ctx.shadowColor = lp.flash > 0 ? (lp.flashOk ? '#37d67a' : RED) : GOLD;
-  ctx.shadowBlur = 10;
-  ctx.strokeStyle = lp.flash > 0 ? (lp.flashOk ? '#37d67a' : RED) : GOLD;
-  ctx.lineWidth = 6;
+  ctx.shadowColor = needleCol;
+  ctx.shadowBlur = 16;
+  ctx.strokeStyle = needleCol;
+  ctx.lineWidth = 8;
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.lineTo(cx + Math.cos(na) * (R - 14), cy + Math.sin(na) * (R - 14));
   ctx.stroke();
+  ctx.fillStyle = needleCol;
+  ctx.beginPath();
+  ctx.arc(cx + Math.cos(na) * (R - 14), cy + Math.sin(na) * (R - 14), 6, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
   ctx.fillStyle = '#e8eaf6';
   ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI * 2); ctx.fill();
+  // Hit/miss flash word in the dial's empty lower half.
+  if (lp.flash > 0) {
+    ctx.save();
+    ctx.shadowColor = lp.flashOk ? '#37d67a' : RED;
+    ctx.shadowBlur = 18;
+    text(ctx, lp.flashOk ? 'KENA!' : 'GAGAL!', cx, cy + 92, 26, lp.flashOk ? '#37d67a' : '#ff5b5b', 'center');
+    ctx.restore();
+  }
 
   text(ctx, '🔓  BOBOL BRANKAS', cx, cy - R - 52, 26, GOLD, 'center');
   text(ctx, `Tekan E saat jarum di zona hijau — ${lp.successes}/3 berhasil`, cx, cy - R - 22, 14, '#c9cede', 'center', '500');
-  text(ctx, `Gagal ${lp.fails}x  ·  tiap gagal +${9}% alarm`, cx, cy + R + 36, 12, '#8a8fae', 'center', '500');
-  text(ctx, 'Esc — batal', cx, cy + R + 62, 12, '#8a8fae', 'center', '500');
+  text(ctx, `Gagal ${lp.fails}x  ·  tiap gagal +${9}% alarm`, cx, cy + R + 34, 12, '#8a8fae', 'center', '500');
+  text(ctx, 'Esc — batal', cx, cy + R + 58, 12, '#8a8fae', 'center', '500');
+  // Progress pips — v4: bigger, gold-ringed when banked.
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = i < lp.successes ? GOLD : 'rgba(255,255,255,0.18)';
+    ctx.beginPath(); ctx.arc(cx - 34 + i * 34, cy + R + 88, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = i < lp.successes ? GOLD : '#565e8a'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  // The prize behind this dial, on a gold chip.
+  if (lp.loot) {
+    const chip = `🔒  ${lp.loot.name}  ·  $${lp.loot.value.toLocaleString('en-US')}`;
+    ctx.font = '700 13px system-ui, sans-serif';
+    const w = ctx.measureText(chip).width + 30;
+    pill(ctx, cx - w / 2, cy + R + 108, w, 26, 'rgba(10,12,26,0.88)', GOLD);
+    text(ctx, chip, cx, cy + R + 121, 13, GOLD, 'center');
+  }
 }
 
 function drawIntro(ctx, game) {
@@ -866,6 +962,21 @@ export function render(ctx, game) {
   drawPlayer(ctx, game, game.t);
   drawInteractPrompt(ctx, game);
   drawVignette(ctx);
+  if (game.shotName === 'cover') {
+    // v4 cinematic light on the near-miss: a warm pool over the crown
+    // and the crouched thief, edges falling a touch darker, so the eye
+    // lands on the one held breath. Shot staging only.
+    const sp = ctx.createRadialGradient(705, 460, 20, 705, 460, 300);
+    sp.addColorStop(0, 'rgba(255,214,120,0.12)');
+    sp.addColorStop(1, 'rgba(255,214,120,0)');
+    ctx.fillStyle = sp;
+    ctx.fillRect(PLAY.x, PLAY.y, PLAY.w, PLAY.h);
+    const vg = ctx.createRadialGradient(640, 392, 260, 640, 392, 780);
+    vg.addColorStop(0, 'rgba(2,3,8,0)');
+    vg.addColorStop(1, 'rgba(2,3,8,0.18)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(PLAY.x, PLAY.y, PLAY.w, PLAY.h);
+  }
   drawHUD(ctx, game);
   drawBanner(ctx, game);
   drawIntro(ctx, game);
