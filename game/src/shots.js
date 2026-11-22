@@ -24,7 +24,8 @@ export function stageShot(game, name, seed = 1) {
   game.shotMode = true;
 
   if (name === 'cover') {
-    // Shot 1 — Ruang Permata mid-heist: thief centre, 2 guards + cones,
+    // Shot 1 — Ruang Permata mid-heist: thief centre, 3 guards with
+    // bright cones closing in (one already suspicious, '?' overhead),
     // 1 sweeping camera, the sparkling crown target, alarm ~35%.
     game.loadLevel(2);
     game.state = 'playing';
@@ -32,9 +33,10 @@ export function stageShot(game, name, seed = 1) {
     game.player.dir = -Math.PI / 2; game.player.sneaking = true;
     game.player.moving = false;
     game.guards[0].x = 420; game.guards[0].y = 330; game.guards[0].dir = 0.5;
+    game.guards[0].state = 'suspicious'; game.guards[0].sus = 0.45;
     game.guards[1].x = 880; game.guards[1].y = 560; game.guards[1].dir = Math.PI + 0.4;
     game.guards[1].state = 'suspicious'; game.guards[1].sus = 0.6;
-    game.guards[2].x = 200; game.guards[2].y = 200; game.guards[2].dir = 0;
+    game.guards[2].x = 470; game.guards[2].y = 170; game.guards[2].dir = 0.9;
     game.cameras[0].angle = Math.PI / 2 + 0.45; // sweeping toward the thief
     game.cameras[0].t = 3.1;
     game.alarm = 35;
@@ -74,14 +76,16 @@ export function stageShot(game, name, seed = 1) {
 
   if (name === 'laser') {
     // Shot 3 — the rooftop laser grid: the thief sneaking through a gap
-    // between live beams, crown waiting in the middle cell.
+    // between live beams, crown waiting in the middle cell, guards
+    // closing from both sides, alarm at a tense 55%.
     game.loadLevel(4);
     game.state = 'playing';
-    game.player.x = 420; game.player.y = 380;
+    game.player.x = 430; game.player.y = 380;
     game.player.dir = 0; game.player.sneaking = true;
     game.player.moving = false;
     game.guards[0].x = 300; game.guards[0].y = 150; game.guards[0].dir = 0;
     game.guards[1].x = 1080; game.guards[1].y = 200; game.guards[1].dir = Math.PI;
+    game.guards[1].state = 'suspicious'; game.guards[1].sus = 0.7;
     game.guards[2].x = 640; game.guards[2].y = 640; game.guards[2].dir = -Math.PI / 2;
     game.cameras[0].angle = Math.PI / 2 - 0.5;
     game.alarm = 55;

@@ -4,6 +4,13 @@
 // Progress (stars + total score) lives in localStorage.
 // ?shot=<cover|lockpick|laser|win>&seed=1 stages one frozen pose for
 // screenshots; without a query the game runs interactively.
+//
+// The game is a complete heist in one static page: 5 hand-designed
+// rooms, 3-state guards with gradient vision cones, sweeping security
+// cameras, rhythmic laser grids, a lockpick timing minigame, EMP
+// charges, loot with real bag weight, a 0-100% alarm meter, star
+// scoring and a rooftop helicopter getaway. Procedural Canvas 2D
+// visuals + WebAudio sound, zero image/audio files, fully offline.
 
 import { ALARM, EMP, LOCKPICK, PLAY, PLAYER, VIEW, clamp, circleHitsRect, dist, distToSeg, moveCircle } from './config.js';
 import { ROOMS, roomBlockers, roomSolids } from './rooms.js';

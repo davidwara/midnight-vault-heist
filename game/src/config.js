@@ -1,6 +1,19 @@
 // Midnight Vault — tuning constants and shared geometry helpers.
 // A top-down heist game: sneak through a Borneo museum at midnight,
 // grab the loot, and slip out before the alarm hits 100%.
+//
+// MECHANICS AT A GLANCE (what the player actually does):
+//   - Sneak (Shift): slower, much harder to spot — the core verb.
+//   - Vision cones: guards patrol, grow suspicious ('?'), then chase
+//     ('!') and grab; cameras sweep back and forth with a blind gap.
+//   - EMP (Space, 3 per level): kills every camera for 5 seconds.
+//   - Lockpick minigame: stop the needle in the green zone 3 times;
+//     each miss rattles the lock and feeds the alarm +9%.
+//   - Lasers (rooms 4-5): blink on/off in rhythm; a live beam costs 22%.
+//   - Loot + bag weight: every kilo slows the thief (max -38% speed).
+//   - Alarm 0-100%: rises while seen, cools while hidden; 100% = lockdown.
+//   - Score: loot value + time bonus + $500 "ghost" bonus for staying
+//     under 25% alarm; 1-3 stars per level, saved in localStorage.
 
 export const VIEW = { W: 1280, H: 720 };
 export const HUD_H = 64;

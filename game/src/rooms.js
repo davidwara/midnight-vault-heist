@@ -4,6 +4,20 @@
 // Coordinates live in the 1280x720 canvas; the floor is PLAY
 // (x 16..1264, y 80..704). Obstacles block movement; tall ones
 // (blocksSight, the default) also block vision cones.
+//
+// THE FIVE ROOMS — one heist, five escalating set-pieces:
+//   1. Galeri Lukisan — steal the Mona Borneo off a wall of paintings
+//      while two guards cross-patrol the gallery.
+//   2. Antechamber Brankas — crack the big steel vault (lockpick
+//      minigame: 3 green-zone hits) for the gold bars.
+//   3. Ruang Permata — the crown jewels on a glass island, three
+//      guards circling, two sweeping cameras.
+//   4. Ruang Server — steal the secret data drive past humming server
+//      racks and the first rhythmic laser grid.
+//   5. Kabur Lewat Atap — the rooftop finale: the Borneo Crown, a full
+//      5-beam laser grid, and the helicopter waiting on the helipad.
+// Every room hides one main TARGET plus bonus loot; the heavier the
+// bag, the slower the thief — greed is a mechanic, not a flavour line.
 
 export const ROOMS = [
   {
@@ -16,7 +30,9 @@ export const ROOMS = [
     exit: { x: 1240, y: 360, w: 24, h: 80, label: 'PINTU KELUAR' },
     walls: [
       { x: 600, y: 180, w: 26, h: 26 },   // marble pillars
-      { x: 600, y: 520, w: 26, h: 26 },
+      { x: 600, y: 500, w: 26, h: 26 },   // south pillar sits clear of the
+      // y=560 patrol line (a pillar at y=520 wedges the guard's 15px
+      // collision circle against its corner and the guard never patrols)
       { x: 420, y: 80, w: 14, h: 90 },    // north partition, west
       { x: 846, y: 80, w: 14, h: 90 },    // north partition, east
     ],
