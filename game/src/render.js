@@ -2,7 +2,7 @@
 // the thief, the HUD with its big alarm meter, and every screen.
 // Everything is procedural Canvas 2D; the game ships no image files.
 
-import { PLAY, VIEW } from './config.js';
+import { HUD_H, PLAY, VIEW } from './config.js';
 import { laserOn } from './guards.js';
 
 const GOLD = '#f5c542';
@@ -202,8 +202,9 @@ function drawExit(ctx, game, t) {
     ctx.lineWidth = 2;
     ctx.strokeRect(e.x, e.y, e.w, e.h);
   }
-  text(ctx, e.label, e.x + e.w / 2, e.y + e.h + 16, 11, open ? '#7dff9e' : '#9aa0bd', 'center');
-  if (!open) text(ctx, '🔒 ambil TARGET dulu', e.x + e.w / 2, e.y + e.h + 32, 10, '#7c82a3', 'center', '500');
+  const lx = Math.max(80, Math.min(VIEW.W - 80, e.x + e.w / 2));
+  text(ctx, e.label, lx, e.y + e.h + 16, 11, open ? '#7dff9e' : '#9aa0bd', 'center');
+  if (!open) text(ctx, '🔒 ambil TARGET dulu', lx, e.y + e.h + 32, 10, '#7c82a3', 'center', '500');
 }
 
 function drawGuards(ctx, game) {
@@ -295,7 +296,7 @@ function drawHUD(ctx, game) {
   text(ctx, `Ruang ${game.levelIndex + 1}/5 · ${game.room.name}`, 20, 44, 12, '#9aa0bd', 'left', '500');
 
   // Alarm meter — big, centred, impossible to miss.
-  const aw = 430, ax = VIEW.W / 2 - aw / 2, ay = 12;
+  const aw = 360, ax = VIEW.W / 2 - aw / 2, ay = 12;
   const pct = Math.round(game.alarm);
   const col = game.alarm < 35 ? '#37d67a' : game.alarm < 70 ? '#ffb020' : RED;
   text(ctx, 'ALARM', ax - 8, ay + 12, 13, '#c9cede', 'right');
@@ -313,8 +314,8 @@ function drawHUD(ctx, game) {
   text(ctx, `💰 $${game.lootValue.toLocaleString('en-US')}`, rx, 18, 15, '#fff', 'right');
   const empTxt = '⚡'.repeat(game.empLeft) + '·'.repeat(Math.max(0, 3 - game.empLeft));
   text(ctx, `EMP ${empTxt}  (Spasi)`, rx, 42, 12, '#7dd7ff', 'right', '600');
-  text(ctx, `⏱ ${fmtTime(game.time)}   👮 ${game.guards.length} penjaga   🎒 ${game.bagWeight.toFixed(1)}kg`, rx - 260, 18, 12, '#c9cede', 'right', '500');
-  text(ctx, game.muted ? '🔇 M (mute)' : '🔊 M', rx - 260, 42, 12, '#8a8fae', 'right', '500');
+  text(ctx, `⏱ ${fmtTime(game.time)}  ·  👮 ${game.guards.length}  ·  🎒 ${game.bagWeight.toFixed(1)}kg`, rx - 280, 18, 12, '#c9cede', 'right', '500');
+  text(ctx, game.muted ? '🔇 M (mute)' : '🔊 M', rx - 280, 42, 12, '#8a8fae', 'right', '500');
 }
 
 function fmtTime(s) {
@@ -436,8 +437,6 @@ function drawFailed(ctx, game) {
 function drawWon(ctx, game) {
   ctx.fillStyle = '#0b0e1a';
   ctx.fillRect(0, 0, VIEW.W, VIEW.H);
-  ctx.fillStyle = '#f5c542';
-  ctx.beginPath(); ctx.arc(VIEW.W / 2, 130, 6, 0, Math.PI * 2); ctx.fill();
   text(ctx, '🏆  KABUR SEMPURNA!', VIEW.W / 2, 180, 44, GOLD, 'center');
   text(ctx, 'Lima ruangan, satu helikopter, nol penyesalan.', VIEW.W / 2, 228, 17, '#c9cede', 'center', '500');
   starsRow(ctx, Math.min(3, Math.round(game.progress.stars / 5)), VIEW.W / 2, 285, 40);
@@ -498,8 +497,8 @@ function drawLockpick(ctx, game) {
 
   text(ctx, '🔓  BOBOL BRANKAS', cx, cy - R - 52, 26, GOLD, 'center');
   text(ctx, `Tekan E saat jarum di zona hijau — ${lp.successes}/3 berhasil`, cx, cy - R - 22, 14, '#c9cede', 'center', '500');
-  text(ctx, `Gagal ${lp.fails}x  ·  tiap gagal +${9}% alarm`, cx, cy + R + 26, 12, '#8a8fae', 'center', '500');
-  text(ctx, 'Esc — batal', cx, cy + R + 52, 12, '#8a8fae', 'center', '500');
+  text(ctx, `Gagal ${lp.fails}x  ·  tiap gagal +${9}% alarm`, cx, cy + R + 36, 12, '#8a8fae', 'center', '500');
+  text(ctx, 'Esc — batal', cx, cy + R + 62, 12, '#8a8fae', 'center', '500');
 }
 
 function drawIntro(ctx, game) {

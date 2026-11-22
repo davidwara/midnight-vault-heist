@@ -75,8 +75,8 @@ export const ROOMS = [
       { id: 'relic', kind: 'gem', name: 'Relik Giok', value: 700, weight: 2, x: 960, y: 572 },
     ],
     guards: [
-      { x: 300, y: 180, wp: [[300, 180], [300, 600]], pause: 1.2 },
-      { x: 960, y: 600, wp: [[960, 600], [960, 180]], pause: 1.2 },
+      { x: 180, y: 180, wp: [[180, 180], [180, 600]], pause: 1.2 },
+      { x: 1080, y: 600, wp: [[1080, 600], [1080, 180]], pause: 1.2 },
     ],
     cameras: [
       { x: 200, y: 88, base: Math.PI / 2, sweep: 0.8 },
@@ -147,8 +147,8 @@ export const ROOMS = [
       { id: 'keys', kind: 'drive', name: 'Kunci Enkripsi', value: 800, weight: 2, x: 850, y: 652 },
     ],
     guards: [
-      { x: 180, y: 410, wp: [[180, 410], [1120, 410]], pause: 1.2 },
-      { x: 1120, y: 620, wp: [[1120, 620], [180, 620]], pause: 1.2 },
+      { x: 180, y: 430, wp: [[180, 430], [1120, 430]], pause: 1.2 },
+      { x: 1120, y: 670, wp: [[1120, 670], [180, 670]], pause: 1.2 },
     ],
     cameras: [
       { x: 640, y: 88, base: Math.PI / 2, sweep: 0.9 },

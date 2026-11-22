@@ -28,7 +28,7 @@ export function stageShot(game, name, seed = 1) {
     // 1 sweeping camera, the sparkling crown target, alarm ~35%.
     game.loadLevel(2);
     game.state = 'playing';
-    game.player.x = 640; game.player.y = 480;
+    game.player.x = 640; game.player.y = 545;
     game.player.dir = -Math.PI / 2; game.player.sneaking = true;
     game.player.moving = false;
     game.guards[0].x = 420; game.guards[0].y = 330; game.guards[0].dir = 0.5;
@@ -77,11 +77,11 @@ export function stageShot(game, name, seed = 1) {
     // between live beams, crown waiting in the middle cell.
     game.loadLevel(4);
     game.state = 'playing';
-    game.player.x = 550; game.player.y = 360;
-    game.player.dir = Math.PI / 2; game.player.sneaking = true;
+    game.player.x = 420; game.player.y = 380;
+    game.player.dir = 0; game.player.sneaking = true;
     game.player.moving = false;
     game.guards[0].x = 300; game.guards[0].y = 150; game.guards[0].dir = 0;
-    game.guards[1].x = 980; game.guards[1].y = 620; game.guards[1].dir = Math.PI;
+    game.guards[1].x = 1080; game.guards[1].y = 200; game.guards[1].dir = Math.PI;
     game.guards[2].x = 640; game.guards[2].y = 640; game.guards[2].dir = -Math.PI / 2;
     game.cameras[0].angle = Math.PI / 2 - 0.5;
     game.alarm = 55;

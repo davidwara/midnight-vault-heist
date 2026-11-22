@@ -98,7 +98,7 @@ export class Game {
   }
 
   alarmAdd(n) {
-    if (this.state !== 'playing') return;
+    if (this.state !== 'playing' && this.state !== 'lockpick') return;
     this.alarm = clamp(this.alarm + n, 0, 100);
     this.maxAlarm = Math.max(this.maxAlarm, this.alarm);
     if (this.alarm >= 100) this.failLevel();

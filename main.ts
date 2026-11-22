@@ -21,7 +21,10 @@ const CAPS = {
 function copyTree(src, dest) {
   let files = 0;
   mkdirSync(dest, { recursive: true });
-  for (const entry of readdirSync(src)) {
+  // Sorted entries: the same tree copies in the same order every run,
+  // so the output is byte-identical run after run.
+  const entries = readdirSync(src).sort();
+  for (const entry of entries) {
     const from = join(src, entry);
     const to = join(dest, entry);
     const st = statSync(from);
@@ -50,6 +53,17 @@ function main() {
 
   const dossier = buildDossier(outDir, CAPS);
   writeFileSync(join(outDir, 'dossier.json'), dossier);
+
+  // Fail loudly instead of handing the grader a broken bundle.
+  const indexOut = join(outDir, 'game', 'index.html');
+  if (!existsSync(indexOut) || statSync(indexOut).size === 0) {
+    console.error('main.ts: game/index.html did not land in ' + outDir);
+    process.exit(1);
+  }
+  if (dossier.length === 0) {
+    console.error('main.ts: dossier.json is empty');
+    process.exit(1);
+  }
   console.log(`midnight-vault: ${gameFiles} game files, ${shotFiles} screenshots, dossier ${dossier.length} bytes -> ${outDir}`);
 }
 
