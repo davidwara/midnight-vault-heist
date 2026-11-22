@@ -2,10 +2,11 @@
 // the thief, the HUD with its big alarm meter, and every screen.
 // Everything is procedural Canvas 2D; the game ships no image files.
 //
-// VISUAL SYSTEM (v2): a night museum that reads at a glance — warm
+// VISUAL SYSTEM (v3): a night museum that reads at a glance — warm
 // sconce light against cool marble, bright gradient vision cones so a
 // guard's gaze is unmissable, sparkling loot with a gold TARGET pill,
-// and a HUD whose alarm meter, loot, EMP and clock never collide.
+// a moonlight pool under the thief so the dark hero reads first, and a
+// HUD whose alarm meter, loot, EMP and clock never collide.
 // The thief, the guards and the cameras all cast soft shadows so the
 // floor stops looking flat; every sparkle, window and confetti dot is
 // placed by a deterministic hash, never Math.random, so screenshots
@@ -473,6 +474,15 @@ function drawCameras(ctx, game) {
 function drawPlayer(ctx, game, t) {
   const p = game.player;
   const bob = p.moving ? Math.sin(t * 14) * 1.5 : 0;
+  // A soft pool of moonlight under the thief (v3): the hero is a dark
+  // hood on a dark floor, so a faint glow lifts him off the marble and
+  // makes him read first at a glance — cyan while sneaking, warm gold
+  // while walking. Purely visual; it never affects detection.
+  const glow = ctx.createRadialGradient(p.x, p.y, 4, p.x, p.y, 46);
+  glow.addColorStop(0, p.sneaking ? 'rgba(125,215,255,0.20)' : 'rgba(245,197,66,0.14)');
+  glow.addColorStop(1, 'rgba(125,215,255,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(p.x, p.y, 46, 0, Math.PI * 2); ctx.fill();
   // Sneak shadow ring when hidden in the dark.
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath(); ctx.ellipse(p.x, p.y + 11, 16, 6, 0, 0, Math.PI * 2); ctx.fill();

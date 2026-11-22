@@ -191,7 +191,7 @@ export const ROOMS = [
       { x: 880, y: 200, w: 110, h: 70, kind: 'ac', label: 'AC' },
       { x: 280, y: 500, w: 110, h: 70, kind: 'ac', label: 'AC' },
       { x: 880, y: 500, w: 110, h: 70, kind: 'ac', label: 'AC' },
-      { x: 510, y: 340, w: 80, h: 40, kind: 'table', label: 'MAHKOTA', blocksSight: false },
+      { x: 510, y: 340, w: 80, h: 40, kind: 'table', label: '', blocksSight: false }, // v3: no label — the crown's own TARGET pill sits here
     ],
     paintings: [],
     loot: [

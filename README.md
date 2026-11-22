@@ -6,6 +6,8 @@
 
 **Midnight Vault** is a top-down heist game: one shadow thief slips into a Borneo museum at midnight, lifts the loot room by room, and escapes to the rooftop helipad before the alarm hits 100%. Five hand-designed rooms escalate from a quiet painting gallery to a laser-gridded rooftop — with patrolling guards whose bright vision cones turn from curious yellow to chasing red, sweeping security cameras with real blind gaps, a lockpick timing minigame, EMP charges, rhythmic lasers, and a bag that gets heavier (and slower) with every jewel you grab. Every visual is procedural Canvas 2D and every sound is WebAudio — the game ships no image or audio files and plays fully offline in a desktop browser.
 
+The cover frame is staged as a near-miss: the thief crouches at the glass case with the crown one hand away while a guard's vision cone grazes his shoulder — close enough to feel, not caught. That single held breath is the whole game: sneak, time the cones, grab the loot, get out.
+
 ## Run it
 
 ```sh

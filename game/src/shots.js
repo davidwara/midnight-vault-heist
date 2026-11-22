@@ -24,21 +24,31 @@ export function stageShot(game, name, seed = 1) {
   game.shotMode = true;
 
   if (name === 'cover') {
-    // Shot 1 — Ruang Permata mid-heist: thief centre, 3 guards with
-    // bright cones closing in (one already suspicious, '?' overhead),
-    // 1 sweeping camera, the sparkling crown target, alarm ~35%.
+    // Shot 1 — Ruang Permata mid-heist, staged as a NEAR-MISS (v3):
+    // the thief crouches at the glass case's corner, one hand from the
+    // crown, while the nearest guard's orange cone grazes his shoulder —
+    // its edge passes ~14px from him, close enough to feel, not caught.
+    // The other two guards + two cameras frame the room from the edges
+    // so their cones no longer pile into one muddy wash in the centre,
+    // and the thief sits in the crown's gold halo instead of open dark
+    // floor, so the hero reads first at thumbnail size. Alarm ~35%.
     game.loadLevel(2);
     game.state = 'playing';
-    game.player.x = 640; game.player.y = 545;
-    game.player.dir = -Math.PI / 2; game.player.sneaking = true;
+    game.player.x = 770; game.player.y = 515;
+    game.player.dir = -2.45; game.player.sneaking = true;
     game.player.moving = false;
-    game.guards[0].x = 420; game.guards[0].y = 330; game.guards[0].dir = 0.5;
-    game.guards[0].state = 'suspicious'; game.guards[0].sus = 0.45;
-    game.guards[1].x = 880; game.guards[1].y = 560; game.guards[1].dir = Math.PI + 0.4;
-    game.guards[1].state = 'suspicious'; game.guards[1].sus = 0.6;
+    // Grazer: cone edge (dir 3.20, half-angle 0.62) sits 0.10 rad off the
+    // thief's bearing (2.68), so the thief is just inside the lit edge.
+    game.guards[0].x = 900; game.guards[0].y = 450; game.guards[0].dir = 3.2;
+    game.guards[0].state = 'suspicious'; game.guards[0].sus = 0.6;
+    // Second guard holds the left flank, also suspicious, cone sweeping
+    // the gallery floor toward the case — never onto the thief.
+    game.guards[1].x = 300; game.guards[1].y = 380; game.guards[1].dir = 0.35;
+    game.guards[1].state = 'suspicious'; game.guards[1].sus = 0.5;
     game.guards[2].x = 470; game.guards[2].y = 170; game.guards[2].dir = 0.9;
     game.cameras[0].angle = Math.PI / 2 + 0.45; // sweeping toward the thief
     game.cameras[0].t = 3.1;
+    game.cameras[1].angle = -0.45; // left camera looks up-gallery, off the thief
     game.alarm = 35;
     game.lootValue = 2400;
     game.bagWeight = 4.2;
@@ -75,13 +85,15 @@ export function stageShot(game, name, seed = 1) {
   }
 
   if (name === 'laser') {
-    // Shot 3 — the rooftop laser grid: the thief sneaking through a gap
-    // between live beams, crown waiting in the middle cell, guards
-    // closing from both sides, alarm at a tense 55%.
+    // Shot 3 — the rooftop laser grid (v3): the thief is INSIDE the
+    // grid now, crouched in the one safe cell — live beam x=460 glowing
+    // red on his left, dark beam x=640 on his right, live beam y=300
+    // above, dark beam y=420 below — with the crown one step ahead and
+    // guards closing from both sides, alarm at a tense 55%.
     game.loadLevel(4);
     game.state = 'playing';
-    game.player.x = 430; game.player.y = 380;
-    game.player.dir = 0; game.player.sneaking = true;
+    game.player.x = 490; game.player.y = 390;
+    game.player.dir = 0.1; game.player.sneaking = true;
     game.player.moving = false;
     game.guards[0].x = 300; game.guards[0].y = 150; game.guards[0].dir = 0;
     game.guards[1].x = 1080; game.guards[1].y = 200; game.guards[1].dir = Math.PI;
